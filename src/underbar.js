@@ -248,11 +248,31 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    var results = obj;
+    var additions = Array.prototype.slice.call(arguments);
+
+    for (var i = 0; i < additions.length; i++) {
+      for (var key in additions[i]) {
+        results[key] = additions[i][key];
+      }
+    }
+    return results;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    var results = obj;
+    var additions = Array.prototype.slice.call(arguments);
+
+    for (var i = 0; i < additions.length; i++) {
+      for (var key in additions[i]) {
+        if (results[key] === undefined) {
+          results[key] = additions[i][key];
+        }
+      }
+    }
+    return results;
   };
 
 
@@ -295,7 +315,24 @@
   // _.memoize should return a function that, when called, will check if it has
   // already computed the result for the given argument and return that value
   // instead if possible.
+
   _.memoize = function(func) {
+    var computedResults = {};
+    var result;
+
+    return function() {
+      // convert arguments to an array before calling join
+      // which can then be used as a string key for computedResults
+      var args = Array.prototype.slice.call(arguments).join();
+
+      if (!computedResults.hasOwnProperty(args)) {
+        result = func.apply(this, arguments);
+        computedResults[args] = result;
+      } else {
+        result = computedResults[args];
+      }
+      return result;
+    };
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -305,6 +342,10 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    var args = Array.prototype.slice.call(arguments).slice(2);
+    setTimeout(function(){
+      func.apply(null, args)
+    }, wait)
   };
 
 
@@ -319,6 +360,21 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+
+    var output = [];
+
+    for (var i = array.length - 1; i > -1; i--) {
+      if (Math.round(Math.random()) === 1) {
+        output.push(array[i]);
+      } else {
+        output.unshift(array[i]);
+      }
+    }
+    if (output === array) {
+      _.shuffle(output);
+    }
+
+    return output;
   };
 
 
